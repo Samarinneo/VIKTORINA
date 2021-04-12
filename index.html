@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Quiz</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="quiz-over-modal">
+        <div class="content">
+            <h1>Паша ты все равно дебил !</h1>
+            <p>Ты ответил на
+                <span id="correct-answer"></span> из
+                <span id="number-of-all-questions-2"></span> вопроса
+            </p>
+            <button id="btn-try-again">Попробуй снова</button>
+        </div>
+    </div>
+    <div class="quiz-container">
+        <div class="question-number">
+            <h3>Вопрос
+                <span id="number-of-question"></span>
+                из
+                <span id="number-of-all-questions"></span>
+            </h3>
+        </div>
+        <div id="question"></div>
+        <div class="options">
+            <div data-id="0" class="option option1"></div>
+            <div data-id="1" class="option option2"></div>
+            <div data-id="2" class="option option3"></div>
+            <div data-id="3" class="option option4"></div>
+        </div>
+        <div class="button">
+            <button id="btn-next">Next</button>
+        </div>
+        <div id="answers-tracker">
+
+        </div>
+    </div>
+    <script>
+
+        // All answers optionS
+        const option1 = document.querySelector('.option1'),
+            option2 = document.querySelector('.option2'),
+            option3 = document.querySelector('.option3'),
+            option4 = document.querySelector('.option4');
+
+
+        //  All our options
+        const optionElements = document.querySelectorAll('.option');
+
+        const question = document.getElementById('question'); //sam vopros
+
+        const numberOfQuestion = document.getElementById('number-of-question'), //nomer voprosa
+            numberOfAllQuestions = document.getElementById('number-of-all-questions'); //koli4estvo vseh voprosov
+
+        let indexOfQuestion, //index tekushego voprosa
+            indexOfPage = 0; //index stranici
+
+
+        const answersTracker = document.getElementById('answers-tracker'); //obyortka trekera
+        const btnNext = document.getElementById('btn-next'); //knopka next
+
+        let score = 0; //itogoviy rezultat viktorini
+        const correctAnswer = document.getElementById('correct-answer'), //koliestvo pravilnih otvetov
+            numberOfAllQuestions2 = document.getElementById('number-of-all-questions-2'), //koli4estvo vseh voprosov v modalnom okne
+            btnTryAgain = document.getElementById('btn-try-again'); //knopka na4at viktorinu zanovo 
+
+        const questions = [
+            {
+                question: 'Какова столица Израиля?',
+                options: [
+                    'Тель-Авив',
+                    'Иерусалим',
+                    'Хайфа',
+                    'Вефлием',
+                ],
+                rightAnswer: 1
+            },
+            {
+                question: 'В каком году Юрий Гагарин полетел на луну?',
+                options: [
+                    '1961',
+                    '1963',
+                    '1981',
+                    'Никогда этого небыло',
+                ],
+                rightAnswer: 3
+            },
+            {
+                question: 'Какова самая высокая точка на земле?',
+                options: [
+                    'Джомолунгма',
+                    'Ниагара',
+                    'Неаполь',
+                    'Эфелева башня',
+                ],
+                rightAnswer: 0
+            },
+            {
+                question: 'Какая страна больше всех выигрывала евровидиние?',
+                options: [
+                    'Россия',
+                    'Ирландия',
+                    'Австралия',
+                    'США',
+                ],
+                rightAnswer: 1
+            },
+            {
+                question: 'У какой птицы нет перьев?',
+                options: [
+                    'Коршун',
+                    'Киви',
+                    'Страус',
+                    'Сорока',
+                ],
+                rightAnswer: 1
+            },
+            {
+                question: 'В каком месяце отмечается годовщина октябрьской революции?',
+                options: [
+                    'Октябрь',
+                    'Ноябрь',
+                    'Январь',
+                    'Май',
+                ],
+                rightAnswer: 1
+            },
+            {
+                question: 'Какое самое глубокое место на земле?',
+                options: [
+                    'Мертвое море',
+                    'Каспийское море',
+                    'Долина смерти США',
+                    'Турфанская впадина',
+                ],
+                rightAnswer: 0
+            },
+
+        ];
+
+        numberOfAllQuestions.innerHTML = questions.length; //vivodim koli4estvo voprosov
+
+        const load = () => {
+            question.innerHTML = questions[indexOfQuestion].question; //sam vopros
+            //mapim otveti
+            option1.innerHTML = questions[indexOfQuestion].options[0];
+            option2.innerHTML = questions[indexOfQuestion].options[1];
+            option3.innerHTML = questions[indexOfQuestion].options[2];
+            option4.innerHTML = questions[indexOfQuestion].options[3];
+
+            numberOfQuestion.innerHTML = indexOfPage + 1; //ustanovka nomera tekushey stranici
+            indexOfPage++; //uveli4enie indexa stranici
+        };
+        let complitedAnswers = [] //massiv dlya uje zadannih voprosov
+
+        const randomQuestion = () => {
+            let randomNumber = Math.floor(Math.random() * questions.length);
+            let hitDuplicate = false; //yakor dlya proverki odinakovih voprosov
+            if (indexOfPage == questions.length) {
+                quizOver()
+            }
+            else {
+                if (complitedAnswers.length > 0) {
+                    complitedAnswers.forEach(item => {
+                        if (item == randomNumber) {
+                            hitDuplicate = true;
+                        }
+                    });
+                    if (hitDuplicate) {
+                        randomQuestion();
+                    } else {
+                        indexOfQuestion = randomNumber;
+                        load();
+                    }
+                }
+                if (complitedAnswers.length == 0) {
+                    indexOfQuestion = randomNumber;
+                    load();
+                }
+            }
+            complitedAnswers.push(indexOfQuestion);
+        };
+
+        const checkAnswer = el => {
+            if (el.target.dataset.id == questions[indexOfQuestion].rightAnswer) {
+                el.target.classList.add('correct');
+                updateAnswerTracker('correct');
+                score++;
+            } else {
+                el.target.classList.add('wrong');
+                updateAnswerTracker('wrong');
+            }
+            disabledOptions();
+        }
+
+        for (option of optionElements) {
+            option.addEventListener('click', e => checkAnswer(e));
+
+        }
+        const disabledOptions = () => {
+            optionElements.forEach(item => {
+                item.classList.add('disabled');
+                if (item.dataset.id == questions[indexOfQuestion].rightAnswer) {
+                    item.classList.add('correct');
+                }
+            })
+        }
+        //udalenie vseh classov so vseh otvetov
+        const enabledOptions = () => {
+            optionElements.forEach(item => {
+                item.classList.remove('disabled', 'correct', 'wrong');
+            })
+        };
+
+        const answerTracker = () => {
+            questions.forEach(() => {
+                const div = document.createElement('div');
+                answersTracker.appendChild(div);
+            })
+        }
+        const updateAnswerTracker = status => {
+            answersTracker.children[indexOfPage - 1].classList.add(`${status}`);
+        }
+
+        const validate = () => {
+            if (!optionElements[0].classList.contains('disabled')) {
+                alert('nahuy!sna4ala otvet');
+            } else {
+                randomQuestion();
+                enabledOptions();
+            }
+        }
+
+        const quizOver = () => {
+            document.querySelector('.quiz-over-modal').classList.add('active');
+            correctAnswer.innerHTML = score;
+            numberOfAllQuestions2.innerHTML = questions.length;
+        }
+
+        const tryAgain = () => {
+            window.location.reload();
+        }
+
+        btnTryAgain.addEventListener('click', tryAgain);
+
+        btnNext.addEventListener('click', () => {
+            validate();
+        })
+
+        window.addEventListener('load', () => {
+            randomQuestion();
+            answerTracker();
+        });
+    </script>
+</body>
+
+</html>
